@@ -16,74 +16,54 @@ from langgraph.prebuilt import create_react_agent
 warnings.filterwarnings("ignore")
 load_dotenv()
 
-# --- TOOL 1: THE RESEARCHER ---
+# --- TOOL: THE ADVANCED LOGIN TESTER ---
 @tool
-def search_duckduckgo(query: str):
+def check_saucedemo_login(username: str, password: str = "secret_sauce"):
     """
-    Use this to find general information or expected behavior.
+    Tests the login on 'saucedemo.com' with a SPECIFIC username.
+    Returns the success message or the specific error message found on screen.
+    Also saves a screenshot if login fails.
     """
     try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True) 
-            page = browser.new_page()
-            page.goto("https://duckduckgo.com")
-            page.fill('input[name="q"]', query)
-            page.press('input[name="q"]', 'Enter')
-            page.wait_for_selector('.react-results--main', timeout=5000)
-            content = page.inner_text('.react-results--main')[:1000]
-            return f"SEARCH DATA: {content}..."
-    except Exception as e:
-        return f"Search Error: {e}"
-
-# --- TOOL 2: THE TESTER (NEW!) ---
-@tool
-def check_website_health(url: str):
-    """
-    Use this to TEST a specific website URL.
-    It checks: Status Code (200 OK), Load Time, and Link Counts.
-    """
-    try:
-        print(f"  [TESTER] 🩺 Starting Health Check for: {url}...")
+        print(f"  [TESTER] 🤖 Testing Login for User: '{username}'...")
         
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=False) # Headless=False so you can see it
+            browser = p.chromium.launch(headless=False) 
             page = browser.new_page()
             
-            # 1. Start Timer
-            start_time = time.time()
+            # 1. Navigate
+            page.goto("https://www.saucedemo.com")
             
-            # 2. Navigate
-            try:
-                response = page.goto(url, timeout=10000) # 10s timeout
-            except Exception as nav_err:
-                return f"❌ CRITICAL: Could not reach {url}. Error: {nav_err}"
+            # 2. Type Credentials (Dynamic!)
+            page.fill('input[id="user-name"]', username)
+            page.fill('input[id="password"]', password)
             
-            # 3. Stop Timer
-            end_time = time.time()
-            duration = round(end_time - start_time, 2)
+            # 3. Click
+            page.click('input[id="login-button"]')
+            time.sleep(1) # Wait for animation
             
-            # 4. Gather Metrics
-            status_code = response.status
-            page_title = page.title()
-            link_count = page.locator('a').count()
-            image_count = page.locator('img').count()
+            # 4. INTELLIGENT CHECK
+            # We look for TWO things: Success (Products) OR Failure (Error Box)
             
-            # 5. Analyze Results
-            health_status = "✅ HEALTHY" if status_code == 200 else "⚠️ UNHEALTHY"
+            if page.locator('.title').is_visible():
+                # SUCCESS PATH
+                return f"✅ SUCCESS: User '{username}' logged in successfully."
             
-            report = (
-                f"--- TEST REPORT FOR {url} ---\n"
-                f"STATUS: {health_status} (Code: {status_code})\n"
-                f"LOAD TIME: {duration} seconds\n"
-                f"TITLE: '{page_title}'\n"
-                f"ELEMENTS: {link_count} Links, {image_count} Images found.\n"
-            )
+            elif page.locator('[data-test="error"]').is_visible():
+                # FAILURE PATH
+                error_msg = page.inner_text('[data-test="error"]')
+                
+                # TAKE EVIDENCE
+                screenshot_name = f"evidence_failure_{username}.png"
+                page.screenshot(path=screenshot_name)
+                
+                return f"❌ FAILED: Login failed with error: '{error_msg}'. (Screenshot saved to {screenshot_name})"
             
-            print(f"  [TESTER] 📄 Report generated.")
-            return report
+            else:
+                return "⚠️ UNKNOWN STATE: Neither success nor error message found."
 
     except Exception as e:
-        return f"Test Tool Failed: {e}"
+        return f"Tool Crash: {e}"
 
 def main():
     # --- SETUP BRAIN ---
@@ -94,28 +74,28 @@ def main():
     )
 
     # --- SETUP MANAGER ---
-    # We give it BOTH tools now
-    tools = [search_duckduckgo, check_website_health]
+    tools = [check_saucedemo_login]
     llm_with_tools = llm.bind_tools(tools)
     agent_executor = create_react_agent(llm_with_tools, tools)
 
     # --- RUN MISSION ---
-    print("\n--- AI QA ENGINEER STARTED ---")
+    print("\n--- AI SENIOR QA ENGINEER STARTED ---")
     
-    # CASE 1: A working website
-    # question = "Test the website 'https://example.com' and tell me if it is healthy."
-    
-    # CASE 2: A broken/non-existent website (Try this to see it fail!)
-    question = "Test the website 'https://this-site-does-not-exist-12345.com' and report the error."
+    # COMPLEX REQUEST:
+    # We ask the agent to run TWO tests and compare them.
+    question = (
+        "I need you to test the login scenarios for Saucedemo."
+        "First, test with 'standard_user'."
+        "Then, test with 'locked_out_user'."
+        "Finally, summarize the difference in behavior between them."
+    )
     
     print(f"User Request: {question}")
     
     system_instruction = (
-        "You are a QA Automation Engineer. "
-        "Your job is to run tests on websites using the 'check_website_health' tool. "
-        "Analyze the report it gives you. "
-        "If the Status Code is not 200, report it as a FAILURE. "
-        "If Load Time is > 2 seconds, warn that it is SLOW."
+        "You are a Senior QA Engineer."
+        "You must execute every test requested."
+        "If a test fails, report the specific error message returned by the tool."
     )
 
     try:
@@ -125,10 +105,11 @@ def main():
                     ("system", system_instruction),
                     ("human", question)
                 ]
-            }
+            },
+            config={"recursion_limit": 10} # Allow enough steps for multiple tests
         )
         
-        print("\n--- FINAL TEST SUMMARY ---")
+        print("\n--- FINAL TEST REPORT ---")
         print(response["messages"][-1].content)
         
     except Exception as e:
