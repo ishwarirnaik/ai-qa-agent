@@ -1,11 +1,9 @@
 import os
 import warnings
 import time
-# We don't need dotenv for the key if we paste it directly, 
-# but keeping it is good practice if you put GROQ_API_KEY in your .env file.
 from dotenv import load_dotenv
 
-# 1. BRAIN (We swapped Google for Groq)
+# 1. BRAIN
 from langchain_groq import ChatGroq
 
 # 2. HANDS
@@ -18,15 +16,11 @@ from langgraph.prebuilt import create_react_agent
 warnings.filterwarnings("ignore")
 load_dotenv()
 
-# --- CONFIGURATION ---
-# PASTE YOUR KEY HERE if you don't want to use the .env file yet
-# os.environ["GROQ_API_KEY"] = "gsk_..." 
-
 # --- THE TOOL ---
 @tool
 def search_duckduckgo(query: str):
     """
-    Performs a web search on DuckDuckGo to find facts.
+    Performs a web search on DuckDuckGo.
     """
     try:
         print(f"DEBUG: Launching browser for search: '{query}'...")
@@ -35,23 +29,25 @@ def search_duckduckgo(query: str):
             browser = p.chromium.launch(headless=False) 
             page = browser.new_page()
             
-            print("DEBUG: Navigating to DuckDuckGo...")
+            # Navigate
+            print(f"DEBUG: Navigating to DuckDuckGo...")
             page.goto("https://duckduckgo.com")
             page.wait_for_load_state("domcontentloaded")
             
-            print(f"DEBUG: Typing '{query}'...")
+            # Type
+            print(f"DEBUG: Typing query...")
             page.locator('input[name="q"]').click()
             page.fill('input[name="q"]', query)
             time.sleep(1) 
-            
-            print("DEBUG: Hitting Enter...")
             page.press('input[name="q"]', 'Enter')
             
-            print("DEBUG: Waiting for results...")
+            # Wait
+            print(f"DEBUG: Waiting for results...")
             page.wait_for_selector('.react-results--main', timeout=5000)
             
-            content = page.inner_text('.react-results--main')[:1000]
-            print("DEBUG: Got content.")
+            # Read
+            content = page.inner_text('.react-results--main')[:2000]
+            print(f"DEBUG: Content retrieved.")
             
             return f"SEARCH RESULTS for '{query}':\n{content}..."
             
@@ -60,8 +56,8 @@ def search_duckduckgo(query: str):
 
 def main():
     # --- SETUP BRAIN ---
-    # We use Groq's Llama 3.3 model. It is fast and free.
-    print("Connecting to Groq Brain...")
+    # We stick with the powerful model you wanted
+    print("Connecting to Groq Brain (Llama 3.3)...")
     llm = ChatGroq(
         model="llama-3.3-70b-versatile", 
         temperature=0
@@ -69,16 +65,36 @@ def main():
 
     # --- SETUP MANAGER ---
     tools = [search_duckduckgo]
-    agent_executor = create_react_agent(llm, tools)
+    
+    # CODE FIX: We explicitly 'bind' the tools.
+    # This forces the model to recognize them as executable functions, not text.
+    llm_with_tools = llm.bind_tools(tools)
+    
+    # We pass the 'bound' model to the agent
+    agent_executor = create_react_agent(llm_with_tools, tools)
 
     # --- RUN MISSION ---
     print("--- STARTING MISSION ---")
-    question = "Check who won the ao open 2026"
+    question = "Is Ishwari Naik of KLE Tech University on LinkedIn?" 
     print(f"User Question: {question}")
     
+    # CODE FIX: A forceful system prompt to stop the XML nonsense
+    system_instruction = (
+        "You are a researcher. "
+        "You have access to a tool called 'search_duckduckgo'. "
+        "You MUST call this tool to find the answer. "
+        "Do not output JSON or XML as text. Just call the tool."
+    )
+
     try:
         response = agent_executor.invoke(
-            {"messages": [("human", question)]}
+            {
+                "messages": [
+                    ("system", system_instruction),
+                    ("human", question)
+                ]
+            },
+            config={"recursion_limit": 5}
         )
         
         print("\n--- FINAL RESULT ---")
@@ -86,7 +102,6 @@ def main():
         
     except Exception as e:
         print(f"Error: {e}")
-        print("\nTIP: Did you set your GROQ_API_KEY?")
 
 if __name__ == "__main__":
     main()
