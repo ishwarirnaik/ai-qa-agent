@@ -16,86 +16,119 @@ from langgraph.prebuilt import create_react_agent
 warnings.filterwarnings("ignore")
 load_dotenv()
 
-# --- THE TOOL ---
+# --- TOOL 1: THE RESEARCHER ---
 @tool
 def search_duckduckgo(query: str):
     """
-    Performs a web search on DuckDuckGo.
-    Use this tool when you need to find facts, news, prices, or technical documentation.
+    Use this to find general information or expected behavior.
     """
     try:
-        print(f"  [TOOL] 🔍 Searching for: '{query}'...")
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True) 
+            page = browser.new_page()
+            page.goto("https://duckduckgo.com")
+            page.fill('input[name="q"]', query)
+            page.press('input[name="q"]', 'Enter')
+            page.wait_for_selector('.react-results--main', timeout=5000)
+            content = page.inner_text('.react-results--main')[:1000]
+            return f"SEARCH DATA: {content}..."
+    except Exception as e:
+        return f"Search Error: {e}"
+
+# --- TOOL 2: THE TESTER (NEW!) ---
+@tool
+def check_website_health(url: str):
+    """
+    Use this to TEST a specific website URL.
+    It checks: Status Code (200 OK), Load Time, and Link Counts.
+    """
+    try:
+        print(f"  [TESTER] 🩺 Starting Health Check for: {url}...")
         
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=False) 
+            browser = p.chromium.launch(headless=False) # Headless=False so you can see it
             page = browser.new_page()
             
-            page.goto("https://duckduckgo.com")
-            page.wait_for_load_state("domcontentloaded")
+            # 1. Start Timer
+            start_time = time.time()
             
-            page.locator('input[name="q"]').click()
-            page.fill('input[name="q"]', query)
-            time.sleep(1) 
-            page.press('input[name="q"]', 'Enter')
+            # 2. Navigate
+            try:
+                response = page.goto(url, timeout=10000) # 10s timeout
+            except Exception as nav_err:
+                return f"❌ CRITICAL: Could not reach {url}. Error: {nav_err}"
             
-            # Wait longer for complex results
-            page.wait_for_selector('.react-results--main', timeout=6000)
+            # 3. Stop Timer
+            end_time = time.time()
+            duration = round(end_time - start_time, 2)
             
-            # Read more content (3000 chars) to get details
-            content = page.inner_text('.react-results--main')[:3000]
-            print(f"  [TOOL] ✅ Found data.")
+            # 4. Gather Metrics
+            status_code = response.status
+            page_title = page.title()
+            link_count = page.locator('a').count()
+            image_count = page.locator('img').count()
             
-            return f"SEARCH RESULTS for '{query}':\n{content}..."
+            # 5. Analyze Results
+            health_status = "✅ HEALTHY" if status_code == 200 else "⚠️ UNHEALTHY"
             
+            report = (
+                f"--- TEST REPORT FOR {url} ---\n"
+                f"STATUS: {health_status} (Code: {status_code})\n"
+                f"LOAD TIME: {duration} seconds\n"
+                f"TITLE: '{page_title}'\n"
+                f"ELEMENTS: {link_count} Links, {image_count} Images found.\n"
+            )
+            
+            print(f"  [TESTER] 📄 Report generated.")
+            return report
+
     except Exception as e:
-        return f"Error during search: {e}"
+        return f"Test Tool Failed: {e}"
 
 def main():
     # --- SETUP BRAIN ---
     print("Connecting to Groq Brain (Llama 3.3)...")
     llm = ChatGroq(
         model="llama-3.3-70b-versatile", 
-        temperature=0.2 # Slight creativity allowed for planning
+        temperature=0
     )
 
     # --- SETUP MANAGER ---
-    tools = [search_duckduckgo]
+    # We give it BOTH tools now
+    tools = [search_duckduckgo, check_website_health]
     llm_with_tools = llm.bind_tools(tools)
     agent_executor = create_react_agent(llm_with_tools, tools)
 
     # --- RUN MISSION ---
-    print("\n--- DEEP RESEARCH AGENT STARTED ---")
+    print("\n--- AI QA ENGINEER STARTED ---")
     
-    # A Multi-Step Question
-    question = "Compare the battery life of the iPhone 15 Pro Max vs Samsung S24 Ultra. Then tell me which one is better for a 10-hour flight."
+    # CASE 1: A working website
+    # question = "Test the website 'https://example.com' and tell me if it is healthy."
     
-    print(f"User Question: {question}")
+    # CASE 2: A broken/non-existent website (Try this to see it fail!)
+    question = "Test the website 'https://this-site-does-not-exist-12345.com' and report the error."
     
-    # --- THE PLANNER PROMPT ---
-    # We tell the AI to explicitly think in steps.
+    print(f"User Request: {question}")
+    
     system_instruction = (
-        "You are a thorough Technical Researcher. "
-        "When asked a comparison question, you must:"
-        "1. Search for data on the first item."
-        "2. Search for data on the second item."
-        "3. Compare them based on the user's specific scenario."
-        "Do NOT guess. Use the 'search_duckduckgo' tool multiple times if needed."
-        "Output your final answer clearly."
+        "You are a QA Automation Engineer. "
+        "Your job is to run tests on websites using the 'check_website_health' tool. "
+        "Analyze the report it gives you. "
+        "If the Status Code is not 200, report it as a FAILURE. "
+        "If Load Time is > 2 seconds, warn that it is SLOW."
     )
 
     try:
-        # We increase recursion_limit to 10 to allow multiple search steps
         response = agent_executor.invoke(
             {
                 "messages": [
                     ("system", system_instruction),
                     ("human", question)
                 ]
-            },
-            config={"recursion_limit": 10} 
+            }
         )
         
-        print("\n--- FINAL RESEARCH REPORT ---")
+        print("\n--- FINAL TEST SUMMARY ---")
         print(response["messages"][-1].content)
         
     except Exception as e:
