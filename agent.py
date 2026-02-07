@@ -21,33 +21,29 @@ load_dotenv()
 def search_duckduckgo(query: str):
     """
     Performs a web search on DuckDuckGo.
+    Use this tool when you need to find facts, news, prices, or technical documentation.
     """
     try:
-        print(f"DEBUG: Launching browser for search: '{query}'...")
+        print(f"  [TOOL] 🔍 Searching for: '{query}'...")
         
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=False) 
             page = browser.new_page()
             
-            # Navigate
-            print(f"DEBUG: Navigating to DuckDuckGo...")
             page.goto("https://duckduckgo.com")
             page.wait_for_load_state("domcontentloaded")
             
-            # Type
-            print(f"DEBUG: Typing query...")
             page.locator('input[name="q"]').click()
             page.fill('input[name="q"]', query)
             time.sleep(1) 
             page.press('input[name="q"]', 'Enter')
             
-            # Wait
-            print(f"DEBUG: Waiting for results...")
-            page.wait_for_selector('.react-results--main', timeout=5000)
+            # Wait longer for complex results
+            page.wait_for_selector('.react-results--main', timeout=6000)
             
-            # Read
-            content = page.inner_text('.react-results--main')[:2000]
-            print(f"DEBUG: Content retrieved.")
+            # Read more content (3000 chars) to get details
+            content = page.inner_text('.react-results--main')[:3000]
+            print(f"  [TOOL] ✅ Found data.")
             
             return f"SEARCH RESULTS for '{query}':\n{content}..."
             
@@ -56,37 +52,39 @@ def search_duckduckgo(query: str):
 
 def main():
     # --- SETUP BRAIN ---
-    # We stick with the powerful model you wanted
     print("Connecting to Groq Brain (Llama 3.3)...")
     llm = ChatGroq(
         model="llama-3.3-70b-versatile", 
-        temperature=0
+        temperature=0.2 # Slight creativity allowed for planning
     )
 
     # --- SETUP MANAGER ---
     tools = [search_duckduckgo]
-    
-    # CODE FIX: We explicitly 'bind' the tools.
-    # This forces the model to recognize them as executable functions, not text.
     llm_with_tools = llm.bind_tools(tools)
-    
-    # We pass the 'bound' model to the agent
     agent_executor = create_react_agent(llm_with_tools, tools)
 
     # --- RUN MISSION ---
-    print("--- STARTING MISSION ---")
-    question = "Is Ishwari Naik of KLE Tech University on LinkedIn?" 
+    print("\n--- DEEP RESEARCH AGENT STARTED ---")
+    
+    # A Multi-Step Question
+    question = "Compare the battery life of the iPhone 15 Pro Max vs Samsung S24 Ultra. Then tell me which one is better for a 10-hour flight."
+    
     print(f"User Question: {question}")
     
-    # CODE FIX: A forceful system prompt to stop the XML nonsense
+    # --- THE PLANNER PROMPT ---
+    # We tell the AI to explicitly think in steps.
     system_instruction = (
-        "You are a researcher. "
-        "You have access to a tool called 'search_duckduckgo'. "
-        "You MUST call this tool to find the answer. "
-        "Do not output JSON or XML as text. Just call the tool."
+        "You are a thorough Technical Researcher. "
+        "When asked a comparison question, you must:"
+        "1. Search for data on the first item."
+        "2. Search for data on the second item."
+        "3. Compare them based on the user's specific scenario."
+        "Do NOT guess. Use the 'search_duckduckgo' tool multiple times if needed."
+        "Output your final answer clearly."
     )
 
     try:
+        # We increase recursion_limit to 10 to allow multiple search steps
         response = agent_executor.invoke(
             {
                 "messages": [
@@ -94,10 +92,10 @@ def main():
                     ("human", question)
                 ]
             },
-            config={"recursion_limit": 5}
+            config={"recursion_limit": 10} 
         )
         
-        print("\n--- FINAL RESULT ---")
+        print("\n--- FINAL RESEARCH REPORT ---")
         print(response["messages"][-1].content)
         
     except Exception as e:
