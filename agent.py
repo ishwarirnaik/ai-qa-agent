@@ -2,6 +2,7 @@ import os
 import warnings
 import time
 from dotenv import load_dotenv
+from fpdf import FPDF 
 
 # 1. BRAIN
 from langchain_groq import ChatGroq
@@ -16,86 +17,107 @@ from langgraph.prebuilt import create_react_agent
 warnings.filterwarnings("ignore")
 load_dotenv()
 
-# --- TOOL: THE ADVANCED LOGIN TESTER ---
+# --- TOOL 1: THE LOGIN TESTER ---
 @tool
 def check_saucedemo_login(username: str, password: str = "secret_sauce"):
     """
-    Tests the login on 'saucedemo.com' with a SPECIFIC username.
-    Returns the success message or the specific error message found on screen.
-    Also saves a screenshot if login fails.
+    Tests login on 'saucedemo.com'.
+    Returns success/fail message.
+    If failed, SAVES a screenshot and returns the filename.
     """
     try:
-        print(f"  [TESTER] 🤖 Testing Login for User: '{username}'...")
+        print(f"  [TESTER] 🤖 Testing Login for: '{username}'...")
         
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=False) 
             page = browser.new_page()
-            
-            # 1. Navigate
             page.goto("https://www.saucedemo.com")
             
-            # 2. Type Credentials (Dynamic!)
-            page.fill('input[id="user-name"]', username)
-            page.fill('input[id="password"]', password)
-            
-            # 3. Click
-            page.click('input[id="login-button"]')
-            time.sleep(1) # Wait for animation
-            
-            # 4. INTELLIGENT CHECK
-            # We look for TWO things: Success (Products) OR Failure (Error Box)
+            page.fill('#user-name', username)
+            page.fill('#password', password)
+            page.click('#login-button')
+            time.sleep(1)
             
             if page.locator('.title').is_visible():
-                # SUCCESS PATH
-                return f"✅ SUCCESS: User '{username}' logged in successfully."
+                return f"PASS: User '{username}' logged in successfully."
             
             elif page.locator('[data-test="error"]').is_visible():
-                # FAILURE PATH
                 error_msg = page.inner_text('[data-test="error"]')
-                
-                # TAKE EVIDENCE
-                screenshot_name = f"evidence_failure_{username}.png"
+                screenshot_name = f"evidence_{username}.png"
                 page.screenshot(path=screenshot_name)
                 
-                return f"❌ FAILED: Login failed with error: '{error_msg}'. (Screenshot saved to {screenshot_name})"
+                return f"FAIL: Login failed. Error: '{error_msg}'. Evidence saved to: {screenshot_name}"
             
             else:
-                return "⚠️ UNKNOWN STATE: Neither success nor error message found."
+                return "FAIL: Unknown state."
 
     except Exception as e:
-        return f"Tool Crash: {e}"
+        return f"Tool Error: {e}"
+
+# --- TOOL 2: THE REPORT GENERATOR ---
+@tool
+def generate_pdf_report(test_summary: str, screenshot_path: str = None):
+    """
+    Creates a PDF report.
+    IMPORTANT: calling this tool finishes the mission.
+    """
+    try:
+        print(f"  [REPORTER] 📝 Generating PDF Report...")
+        
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        
+        # Title
+        pdf.set_font("Arial", 'B', 16)
+        pdf.cell(200, 10, txt="Automated Test Report", ln=1, align='C')
+        pdf.ln(10)
+        
+        # Summary
+        pdf.set_font("Arial", size=12)
+        pdf.multi_cell(0, 10, txt=f"Test Findings:\n{test_summary}")
+        pdf.ln(10)
+        
+        # Attach Image
+        if screenshot_path and os.path.exists(screenshot_path):
+            pdf.cell(200, 10, txt="Visual Evidence:", ln=1)
+            pdf.image(screenshot_path, w=100)
+            print(f"  [REPORTER] 📎 Attached evidence: {screenshot_path}")
+            
+        filename = "Final_Test_Report.pdf"
+        pdf.output(filename)
+        
+        # --- THE FIX IS HERE ---
+        # We shout "MISSION COMPLETE" to the AI so it stops looping.
+        return f"FINAL ANSWER: The PDF report has been generated as '{filename}'. The testing mission is 100% complete. You must stop now."
+
+    except Exception as e:
+        return f"Report Failed: {e}"
 
 def main():
-    # --- SETUP BRAIN ---
     print("Connecting to Groq Brain (Llama 3.3)...")
-    llm = ChatGroq(
-        model="llama-3.3-70b-versatile", 
-        temperature=0
-    )
+    llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0)
 
-    # --- SETUP MANAGER ---
-    tools = [check_saucedemo_login]
+    tools = [check_saucedemo_login, generate_pdf_report]
     llm_with_tools = llm.bind_tools(tools)
     agent_executor = create_react_agent(llm_with_tools, tools)
 
-    # --- RUN MISSION ---
-    print("\n--- AI SENIOR QA ENGINEER STARTED ---")
+    print("\n--- AI TEST MANAGER STARTED ---")
     
-    # COMPLEX REQUEST:
-    # We ask the agent to run TWO tests and compare them.
     question = (
-        "I need you to test the login scenarios for Saucedemo."
-        "First, test with 'standard_user'."
-        "Then, test with 'locked_out_user'."
-        "Finally, summarize the difference in behavior between them."
+        "1. Test login for 'locked_out_user'."
+        "2. If it fails, generate a PDF report."
+        "3. Once the report is generated, stop immediately."
     )
     
     print(f"User Request: {question}")
     
+    # --- THE PROMPT FIX ---
     system_instruction = (
-        "You are a Senior QA Engineer."
-        "You must execute every test requested."
-        "If a test fails, report the specific error message returned by the tool."
+        "You are a QA Automation Agent."
+        "Execute the test. If you need to generate a report, do it ONCE."
+        "After generating the report, output a final text summary and STOP."
+        "Do not loop."
     )
 
     try:
@@ -106,10 +128,10 @@ def main():
                     ("human", question)
                 ]
             },
-            config={"recursion_limit": 10} # Allow enough steps for multiple tests
+            # We also lower the limit so it can't loop forever even if it tries
+            config={"recursion_limit": 5} 
         )
-        
-        print("\n--- FINAL TEST REPORT ---")
+        print("\n--- MISSION COMPLETE ---")
         print(response["messages"][-1].content)
         
     except Exception as e:
