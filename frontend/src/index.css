@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: #0e0e0e;
+  color: #e5e5e5;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.terminal-scroll::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.terminal-scroll::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track { background: #0e0e0e; }
+.terminal-scroll::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #484848;
+  border-radius: 10px;
+}
+
+.flux-panel {
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.9), rgba(11, 15, 24, 0.9));
+  backdrop-filter: blur(12px);
+}
+
+.flux-gradient,
+.flux-button {
+  background: linear-gradient(135deg, #c0c1ff 0%, #2f2ebe 100%);
+}
+
+.flux-button:hover {
+  box-shadow: 0 0 28px rgba(192, 193, 255, 0.22);
+}
+
+.pulse-glow {
+  box-shadow: 0 0 0 0 rgba(192, 193, 255, 0.4);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(192, 193, 255, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(192, 193, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(192, 193, 255, 0); }
+}

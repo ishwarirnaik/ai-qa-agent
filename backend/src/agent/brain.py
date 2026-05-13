@@ -1,11 +1,9 @@
 import os
 from dotenv import load_dotenv
-# FIX: We import Groq instead of Google
 from langchain_groq import ChatGroq
 
 load_dotenv()
 
-# FIX: We use the free Llama model hosted by Groq
 llm = ChatGroq(
     model="llama-3.3-70b-versatile",
     temperature=0
@@ -13,7 +11,7 @@ llm = ChatGroq(
 
 print("Sending request to the Brain (Groq)...")
 try:
-    response = llm.invoke("Explain software testing in one sentence.")
+    response = llm.invoke("Explain the concept of DOM-based web testing in one sentence.")
     print("\n--- AI RESPONSE ---")
     print(response.content)
 except Exception as e:

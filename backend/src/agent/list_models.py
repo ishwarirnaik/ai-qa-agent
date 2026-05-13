@@ -2,18 +2,15 @@ import os
 import requests
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
 api_key = os.getenv("GROQ_API_KEY")
 
 if not api_key:
     print("CRITICAL ERROR: 'GROQ_API_KEY' not found in .env file.")
-    print("Please check your .env file and try again.")
     exit()
 
 url = "https://api.groq.com/openai/v1/models"
-
 headers = {
     "Authorization": f"Bearer {api_key}",
     "Content-Type": "application/json"
@@ -26,7 +23,6 @@ try:
     
     if response.status_code != 200:
         print(f"Error: API returned status code {response.status_code}")
-        print(response.text)
         exit()
         
     data = response.json()
@@ -37,12 +33,10 @@ try:
     print("-" * 60)
     
     for model in models:
-        model_id = model['id']
-        owner = model['owned_by']
-        print(f"{model_id:<40} | {owner:<15}")
+        print(f"{model['id']:<40} | {model['owned_by']:<15}")
         
-    print("\n------------------------------------")
-    print("Copy one of the 'MODEL ID' values above to use in agent.py")
+    print("-" * 60)
+    print("Copy one of the 'MODEL ID' values to use in agent.py")
 
 except Exception as e:
     print(f"Network Error: {e}")
