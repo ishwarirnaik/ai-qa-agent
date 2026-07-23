@@ -18,6 +18,8 @@ async def run_agent_mission(
     user_id: str = "demo_admin",
     save_result: bool = True,
 ):
+    from src.agent.browser import _active_execution_id
+    _active_execution_id.set(execution_id)
     print(f"\n--- AI TEST MANAGER STARTED ---")
     state: QAState = {
         "execution_id": execution_id,
@@ -79,10 +81,11 @@ async def run_agent_mission(
                 + "\n".join(tool_transcript[-30:])
             )
         state["final_response"] = final_response
-        return final_response
+        return final_response, tool_transcript
     except Exception as e:
         state["status"] = "failed"
         state["error"] = repr(e)
-        return f"System Error: {repr(e)}"
+        return f"System Error: {repr(e)}", []
     finally:
-        await close_browser()
+        # Browser cleanup is managed by the parent graph workflow
+        pass

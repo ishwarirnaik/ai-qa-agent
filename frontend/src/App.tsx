@@ -26,8 +26,14 @@ export default function App() {
           'Authorization': `Bearer ${session?.token}`
         }
       });
+      if (response.status === 401 || response.status === 403) {
+        logout();
+        return;
+      }
       const data = await response.json();
-      setHistory(data);
+      if (Array.isArray(data)) {
+        setHistory(data);
+      }
     } finally {
       setHistoryLoading(false);
     }
@@ -57,7 +63,7 @@ export default function App() {
   return (
     <Shell page={page} session={session} status={globalStatus} onNavigate={setPage} onLogout={logout}>
       {page === 'dashboard' && <DashboardPage history={history} onNavigate={setPage} />}
-      {page === 'new-run' && <NewRunPage session={session} onStatusChange={setGlobalStatus} onComplete={() => { loadHistory(session.userId); }} />}
+      {page === 'new-run' && <NewRunPage session={session} onStatusChange={setGlobalStatus} onComplete={() => { loadHistory(session.userId); }} onAuthError={logout} />}
       {page === 'history' && <HistoryPage history={history} loading={historyLoading} onRefresh={() => loadHistory(session.userId)} onSelect={(run) => { setSelectedRun(run); setPage('run-detail'); }} />}
       {page === 'run-detail' && <RunDetailPage run={selectedRun} onBack={() => setPage('history')} />}
     </Shell>

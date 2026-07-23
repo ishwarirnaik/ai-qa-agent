@@ -4,10 +4,12 @@ export function NewRunPage({
   session,
   onComplete,
   onStatusChange,
+  onAuthError,
 }: {
   session: UserSession;
   onComplete: () => void;
   onStatusChange: (status: RunStatus) => void;
+  onAuthError: () => void;
 }) {
   const [targetUrl, setTargetUrl] = useState('');
   const [prompt, setPrompt] = useState('Describe the real user journey to test, the expected result, and any test account or setup notes the agent is allowed to use.');
@@ -41,6 +43,10 @@ export function NewRunPage({
         },
         body: JSON.stringify({ target_url: targetUrl, prompt }),
       });
+      if (response.status === 401 || response.status === 403) {
+        onAuthError();
+        return;
+      }
       const data = await response.json();
       if (data.status === 'success') {
         setTestPlan(data.test_plan);
@@ -66,6 +72,10 @@ export function NewRunPage({
         },
         body: JSON.stringify({ target_url: targetUrl, test_plan: testPlan }),
       });
+      if (response.status === 401 || response.status === 403) {
+        onAuthError();
+        return;
+      }
       const data = await response.json();
       if (data.status === 'success') {
         setScriptCode(data.script);
@@ -96,6 +106,10 @@ export function NewRunPage({
         body: JSON.stringify({ target_url: targetUrl, prompt, script_code: scriptCode, test_plan: testPlan }),
       });
 
+      if (response.status === 401 || response.status === 403) {
+        onAuthError();
+        return;
+      }
       if (!response.ok || !response.body) throw new Error('Execution stream failed to start.');
 
       const reader = response.body.getReader();

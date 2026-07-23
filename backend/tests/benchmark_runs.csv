@@ -1,0 +1,81 @@
+run_id,mode,success,execution_time_sec,actions,self_heals,llm_8b_calls,llm_70b_calls,cost_usd,recoveries
+1,Raw Playwright Script,False,3.2371,0,0,0,0,0.000000,0
+1,LangGraph Agent (No Memory),True,6.8393,3,0,3,0,0.000450,0
+1,HMGO-DEEM (Cold Run),True,29.2221,3,0,3,0,0.000450,0
+1,HMGO-DEEM (Warm Run),True,30.2329,3,0,3,0,0.000450,0
+2,Raw Playwright Script,False,3.1557,0,0,0,0,0.000000,0
+2,LangGraph Agent (No Memory),True,22.5254,3,0,3,0,0.000450,0
+2,HMGO-DEEM (Cold Run),True,31.6343,3,0,3,0,0.000450,0
+2,HMGO-DEEM (Warm Run),True,30.3852,3,0,3,0,0.000450,0
+3,Raw Playwright Script,False,3.1356,0,0,0,0,0.000000,0
+3,LangGraph Agent (No Memory),True,28.6370,3,0,3,0,0.000450,0
+3,HMGO-DEEM (Cold Run),False,30.3489,0,0,3,0,0.000450,0
+3,HMGO-DEEM (Warm Run),True,29.8732,3,0,3,0,0.000450,0
+4,Raw Playwright Script,False,3.1522,0,0,0,0,0.000000,0
+4,LangGraph Agent (No Memory),True,27.8742,3,0,3,0,0.000450,0
+4,HMGO-DEEM (Cold Run),True,30.6823,3,0,3,0,0.000450,0
+4,HMGO-DEEM (Warm Run),True,32.4031,3,0,3,0,0.000450,0
+5,Raw Playwright Script,False,3.2554,0,0,0,0,0.000000,0
+5,LangGraph Agent (No Memory),True,27.2484,3,0,3,0,0.000450,0
+5,HMGO-DEEM (Cold Run),True,31.1914,3,0,3,0,0.000450,0
+5,HMGO-DEEM (Warm Run),True,31.8947,3,0,3,0,0.000450,0
+6,Raw Playwright Script,False,3.4489,0,0,0,0,0.000000,0
+6,LangGraph Agent (No Memory),True,26.9038,3,0,3,0,0.000450,0
+6,HMGO-DEEM (Cold Run),True,30.6470,3,0,3,0,0.000450,0
+6,HMGO-DEEM (Warm Run),True,31.9647,3,0,3,0,0.000450,0
+7,Raw Playwright Script,False,3.2202,0,0,0,0,0.000000,0
+7,LangGraph Agent (No Memory),True,27.5770,3,0,3,0,0.000450,0
+7,HMGO-DEEM (Cold Run),True,32.2080,3,0,3,0,0.000450,0
+7,HMGO-DEEM (Warm Run),True,30.2034,3,0,3,0,0.000450,0
+8,Raw Playwright Script,False,3.2914,0,0,0,0,0.000000,0
+8,LangGraph Agent (No Memory),True,27.7360,3,0,3,0,0.000450,0
+8,HMGO-DEEM (Cold Run),True,31.0084,3,0,3,0,0.000450,0
+8,HMGO-DEEM (Warm Run),True,30.3166,3,0,3,0,0.000450,0
+9,Raw Playwright Script,False,3.3073,0,0,0,0,0.000000,0
+9,LangGraph Agent (No Memory),True,27.2482,3,0,3,0,0.000450,0
+9,HMGO-DEEM (Cold Run),True,31.5317,3,0,3,0,0.000450,0
+9,HMGO-DEEM (Warm Run),True,29.9655,3,0,3,0,0.000450,0
+10,Raw Playwright Script,False,3.1709,0,0,0,0,0.000000,0
+10,LangGraph Agent (No Memory),True,28.3789,3,0,3,0,0.000450,0
+10,HMGO-DEEM (Cold Run),True,31.3538,3,0,3,0,0.000450,0
+10,HMGO-DEEM (Warm Run),False,31.3097,0,0,3,0,0.000450,0
+11,Raw Playwright Script,False,3.4124,0,0,0,0,0.000000,0
+11,LangGraph Agent (No Memory),True,27.9789,3,0,3,0,0.000450,0
+11,HMGO-DEEM (Cold Run),True,30.5403,3,0,3,0,0.000450,0
+11,HMGO-DEEM (Warm Run),True,31.5524,3,0,3,0,0.000450,0
+12,Raw Playwright Script,False,3.3709,0,0,0,0,0.000000,0
+12,LangGraph Agent (No Memory),True,28.3318,3,0,3,0,0.000450,0
+12,HMGO-DEEM (Cold Run),True,31.2954,3,0,3,0,0.000450,0
+12,HMGO-DEEM (Warm Run),True,30.5016,3,0,3,0,0.000450,0
+13,Raw Playwright Script,False,3.5763,0,0,0,0,0.000000,0
+13,LangGraph Agent (No Memory),True,28.4803,3,0,3,0,0.000450,0
+13,HMGO-DEEM (Cold Run),True,31.2818,3,0,3,0,0.000450,0
+13,HMGO-DEEM (Warm Run),True,30.7672,3,0,3,0,0.000450,0
+14,Raw Playwright Script,False,3.1225,0,0,0,0,0.000000,0
+14,LangGraph Agent (No Memory),True,28.3555,3,0,3,0,0.000450,0
+14,HMGO-DEEM (Cold Run),True,31.2090,3,0,3,0,0.000450,0
+14,HMGO-DEEM (Warm Run),True,31.1023,3,0,3,0,0.000450,0
+15,Raw Playwright Script,False,3.3562,0,0,0,0,0.000000,0
+15,LangGraph Agent (No Memory),True,27.5504,3,0,3,0,0.000450,0
+15,HMGO-DEEM (Cold Run),True,30.5338,3,0,3,0,0.000450,0
+15,HMGO-DEEM (Warm Run),True,31.5473,3,0,3,0,0.000450,0
+16,Raw Playwright Script,False,3.2440,0,0,0,0,0.000000,0
+16,LangGraph Agent (No Memory),True,27.1443,3,0,3,0,0.000450,0
+16,HMGO-DEEM (Cold Run),True,31.8967,3,0,3,0,0.000450,0
+16,HMGO-DEEM (Warm Run),True,29.9376,3,0,3,0,0.000450,0
+17,Raw Playwright Script,False,3.7012,0,0,0,0,0.000000,0
+17,LangGraph Agent (No Memory),True,27.7795,3,0,3,0,0.000450,0
+17,HMGO-DEEM (Cold Run),False,220.8361,0,0,3,0,0.000450,0
+17,HMGO-DEEM (Warm Run),False,3416.8615,0,0,1,0,0.000150,0
+18,Raw Playwright Script,False,19.1730,0,0,0,0,0.000000,0
+18,LangGraph Agent (No Memory),True,3.7996,3,0,3,0,0.000450,0
+18,HMGO-DEEM (Cold Run),True,3.7597,3,0,3,0,0.000450,0
+18,HMGO-DEEM (Warm Run),False,29.5784,0,0,3,0,0.000450,0
+19,Raw Playwright Script,False,3.3431,0,0,0,0,0.000000,0
+19,LangGraph Agent (No Memory),True,20.0968,3,0,3,0,0.000450,0
+19,HMGO-DEEM (Cold Run),True,28.6425,3,0,3,0,0.000450,0
+19,HMGO-DEEM (Warm Run),True,31.2827,3,0,3,0,0.000450,0
+20,Raw Playwright Script,False,3.1554,0,0,0,0,0.000000,0
+20,LangGraph Agent (No Memory),True,27.1487,3,0,3,0,0.000450,0
+20,HMGO-DEEM (Cold Run),True,30.9941,3,0,3,0,0.000450,0
+20,HMGO-DEEM (Warm Run),True,31.3179,3,0,3,0,0.000450,0

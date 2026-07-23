@@ -1,0 +1,102 @@
+{
+    "Login Validation": {
+        "Cold Path": {
+            "average_execution_time": 7.75,
+            "average_recovery_attempts": 1.2,
+            "average_cache_hits": 0.0,
+            "average_cache_misses": 5.8,
+            "assertion_success_rate": 1.0,
+            "export_success_rate": 1.0,
+            "success_rate": 1.0
+        },
+        "Warm Path": {
+            "average_execution_time": 38.89,
+            "average_recovery_attempts": 0.0,
+            "average_cache_hits": 4.0,
+            "average_cache_misses": 1.0,
+            "assertion_success_rate": 1.0,
+            "export_success_rate": 1.0,
+            "success_rate": 1.0
+        }
+    },
+    "Form Submission": {
+        "Cold Path": {
+            "average_execution_time": 41.72,
+            "average_recovery_attempts": 1.2,
+            "average_cache_hits": 0.0,
+            "average_cache_misses": 4.6,
+            "assertion_success_rate": 0.94,
+            "export_success_rate": 0.8,
+            "success_rate": 0.8
+        },
+        "Warm Path": {
+            "average_execution_time": 44.41,
+            "average_recovery_attempts": 0.0,
+            "average_cache_hits": 4.2,
+            "average_cache_misses": 0.8,
+            "assertion_success_rate": 1.0,
+            "export_success_rate": 1.0,
+            "success_rate": 1.0
+        }
+    },
+    "Search Interaction": {
+        "Cold Path": {
+            "average_execution_time": 41.09,
+            "average_recovery_attempts": 0.8,
+            "average_cache_hits": 0.0,
+            "average_cache_misses": 4.8,
+            "assertion_success_rate": 1.0,
+            "export_success_rate": 1.0,
+            "success_rate": 1.0
+        },
+        "Warm Path": {
+            "average_execution_time": 38.4,
+            "average_recovery_attempts": 0.0,
+            "average_cache_hits": 4.2,
+            "average_cache_misses": 0.8,
+            "assertion_success_rate": 1.0,
+            "export_success_rate": 1.0,
+            "success_rate": 1.0
+        }
+    },
+    "Multi-step Navigation": {
+        "Cold Path": {
+            "average_execution_time": 42.47,
+            "average_recovery_attempts": 0.6,
+            "average_cache_hits": 0.0,
+            "average_cache_misses": 4.8,
+            "assertion_success_rate": 0.92,
+            "export_success_rate": 0.8,
+            "success_rate": 0.8
+        },
+        "Warm Path": {
+            "average_execution_time": 39.98,
+            "average_recovery_attempts": 0.0,
+            "average_cache_hits": 3.6,
+            "average_cache_misses": 1.4,
+            "assertion_success_rate": 1.0,
+            "export_success_rate": 1.0,
+            "success_rate": 1.0
+        }
+    },
+    "E-commerce Navigation": {
+        "Cold Path": {
+            "average_execution_time": 44.68,
+            "average_recovery_attempts": 2.0,
+            "average_cache_hits": 0.0,
+            "average_cache_misses": 5.2,
+            "assertion_success_rate": 0.62,
+            "export_success_rate": 0.4,
+            "success_rate": 0.4
+        },
+        "Warm Path": {
+            "average_execution_time": 46.32,
+            "average_recovery_attempts": 0.0,
+            "average_cache_hits": 4.2,
+            "average_cache_misses": 0.8,
+            "assertion_success_rate": 1.0,
+            "export_success_rate": 1.0,
+            "success_rate": 1.0
+        }
+    }
+}

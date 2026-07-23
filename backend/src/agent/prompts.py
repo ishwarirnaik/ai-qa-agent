@@ -12,4 +12,5 @@ SYSTEM_INSTRUCTION = (
     "8. Do not submit forms unless the objective requires it. Filling a field should not imply pressing Enter.\n"
     "9. Always capture final evidence with take_evidence_screenshot.\n"
     "10. Always call generate_pdf_report at the end. Base the report only on observed tool outputs and assertions.\n"
+    "11. CRITICAL: You must invoke tools natively using the tool-calling mechanism. Do NOT write down XML tags (like <navigate_to_url>, <fill_input>, <click_element>, etc.) or fake transcripts in your text response. You must execute only one tool call at a time and wait for the tool output before deciding the next step.\n"
 )

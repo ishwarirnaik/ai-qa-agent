@@ -71,3 +71,11 @@ async def execute_generated_script_stream(request: ExecuteScriptRequest, user_id
         run_service.stream_execute_script(request, user_id),
         media_type="text/event-stream",
     )
+
+@app.post("/api/v1/execute/{execution_id}/resume")
+async def resume_execution(execution_id: str):
+    from src.agent.browser import resume_paused_execution
+    success = resume_paused_execution(execution_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="No active pause found for this execution ID.")
+    return {"status": "success", "message": "Execution resumed."}

@@ -8,7 +8,7 @@ import sys
 from src.agent.browser import set_artifact_context
 from src.core.config import DEFAULT_USER_ID
 from src.core.events import event_sink
-from src.core.models import TestRequest, TestRunResult
+from src.core.models import TestRequest, TestRunResult, ExecuteScriptRequest
 from src.graph.qa_workflow import run_qa_workflow
 from src.graph.state import QAState
 from src.repositories.run_repository import RunRepository
@@ -163,15 +163,39 @@ class RunService:
 
     def _is_script_safe(self, script_code: str) -> bool:
         try:
+            # 1. Reject basic substring patterns for quick safety
+            forbidden_substrings = ["__", "eval(", "exec(", "getattr", "setattr", "delattr", "__import__", "open("]
+            for pattern in forbidden_substrings:
+                if pattern in script_code:
+                    print(f"[Security Violation] Script contains forbidden pattern: '{pattern}'")
+                    return False
+
             tree = ast.parse(script_code)
             for node in ast.walk(tree):
+                # Block import statements containing banned libraries
                 if isinstance(node, ast.Import):
                     for alias in node.names:
-                        if alias.name in ["os", "subprocess", "sys", "shutil"]:
+                        if alias.name in ["os", "subprocess", "sys", "shutil", "importlib", "builtins", "ctypes"]:
+                            print(f"[Security Violation] Blocked import: '{alias.name}'")
                             return False
                 elif isinstance(node, ast.ImportFrom):
-                    if node.module in ["os", "subprocess", "sys", "shutil"]:
+                    if node.module in ["os", "subprocess", "sys", "shutil", "importlib", "builtins", "ctypes"]:
+                         print(f"[Security Violation] Blocked import from: '{node.module}'")
+                         return False
+                
+                # Block Call expressions to dangerous builtins
+                elif isinstance(node, ast.Call):
+                    if isinstance(node.func, ast.Name):
+                        if node.func.id in ["eval", "exec", "open", "getattr", "setattr", "delattr", "__import__"]:
+                            print(f"[Security Violation] Blocked function call: '{node.func.id}'")
+                            return False
+                
+                # Block Attribute lookups containing double underscores (dunder access)
+                elif isinstance(node, ast.Attribute):
+                    if "__" in node.attr:
+                        print(f"[Security Violation] Blocked dunder attribute access: '{node.attr}'")
                         return False
+                        
             return True
         except SyntaxError:
             return False
@@ -205,7 +229,7 @@ class RunService:
             await publish("executor", "Starting Playwright script execution.")
             
             process = await asyncio.create_subprocess_exec(
-                sys.executable, script_path,
+                sys.executable, "-u", script_path,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT,
                 cwd=artifacts.run_dir
